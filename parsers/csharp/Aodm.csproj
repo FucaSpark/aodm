@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>disable</Nullable>
+    <RootNamespace>FucaSpark.Aodm</RootNamespace>
+    <AssemblyName>aodm</AssemblyName>
+    <StartupObject>FucaSpark.Aodm.Program</StartupObject>
+    <InvariantGlobalization>true</InvariantGlobalization>
+  </PropertyGroup>
+</Project>

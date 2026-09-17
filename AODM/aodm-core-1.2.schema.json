@@ -1,0 +1,237 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://fucaspark.com/aodm/1.2/aodm-core-1.2.schema.json",
+  "title": "AODM Core 1.2",
+  "description": "JSON equivalent of the AODM 1.2 core ontology. Knowledge primitives: entity, relationship, fact, rule. Annotations: source, confidence, value. See AODM-1.2-SPECIFICATION.md.",
+  "type": "object",
+  "required": ["aodm_version"],
+  "additionalProperties": false,
+  "properties": {
+    "aodm_version": { "const": "1.2" },
+    "entities": { "type": "array", "items": { "$ref": "#/$defs/entity" } },
+    "relationships": { "type": "array", "items": { "$ref": "#/$defs/relationship" } },
+    "facts": { "type": "array", "items": { "$ref": "#/$defs/fact" } },
+    "rules": { "type": "array", "items": { "$ref": "#/$defs/rule" } },
+    "sources": { "type": "array", "items": { "$ref": "#/$defs/source" } }
+  },
+  "$defs": {
+    "temporalPoint": {
+      "type": "string",
+      "anyOf": [
+        { "format": "date" },
+        { "format": "date-time" }
+      ],
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}([T ].*)?$",
+      "description": "ISO 8601 date or date-time."
+    },
+    "digest": {
+      "type": "string",
+      "pattern": "^[a-z0-9-]+:[0-9a-fA-F]{32,128}$",
+      "description": "Self-describing content digest, '<algorithm>:<hex>', e.g. sha256:9f86d0..."
+    },
+    "origin": {
+      "enum": ["observed", "derived", "generated"],
+      "default": "observed",
+      "description": "Where the assertion came from. 'generated' means proposed by a system, typically a language model — a proposal, not a finding."
+    },
+    "evidence": {
+      "type": "array",
+      "description": "Passages supporting the claim. source cites; evidence quotes.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "uri": { "type": "string" },
+          "locator": { "type": "string", "description": "Page, line range, span, cell or timestamp within the source." },
+          "excerpt": { "type": "string" },
+          "retrieved": { "$ref": "#/$defs/temporalPoint" }
+        }
+      }
+    },
+    "polarity": {
+      "enum": ["positive", "negative"],
+      "default": "positive",
+      "description": "Whether the assertion is affirmed or explicitly denied."
+    },
+    "confidence": {
+      "type": "number",
+      "minimum": 0.0,
+      "maximum": 1.0
+    },
+    "derived_from": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Ids of the rule and/or facts this item was inferred from."
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string" },
+        "uri": { "type": "string", "format": "uri" },
+        "title": { "type": "string" },
+        "retrieved": { "$ref": "#/$defs/temporalPoint" },
+        "asserted": { "$ref": "#/$defs/temporalPoint" },
+        "text": { "type": "string" }
+      }
+    },
+    "value": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Structured measurement. Either 'number' (optionally with 'tolerance') or both 'min' and 'max'. See VALIDATION-RULES.md M1-M3.",
+      "properties": {
+        "number": { "type": "number" },
+        "min": { "type": "number" },
+        "max": { "type": "number" },
+        "tolerance": { "type": "number", "minimum": 0 },
+        "unit": { "type": "string", "description": "SHOULD be a UCUM code (e.g. Cel, mm, kg, bar)." }
+      },
+      "oneOf": [
+        { "required": ["number"], "not": { "anyOf": [ { "required": ["min"] }, { "required": ["max"] } ] } },
+        { "required": ["min", "max"], "not": { "anyOf": [ { "required": ["number"] }, { "required": ["tolerance"] } ] } }
+      ]
+    },
+    "entity": {
+      "type": "object",
+      "required": ["id", "type"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string" },
+        "type": { "type": "string" },
+        "label": { "type": "string" },
+        "content": { "type": "string" },
+        "hash": { "$ref": "#/$defs/digest" },
+        "source": { "$ref": "#/$defs/source" },
+        "confidence": { "$ref": "#/$defs/confidence" },
+        "confidence_method": { "type": "string", "description": "How the confidence was derived; mirrors confidence/@method in XML." }
+      }
+    },
+    "relationship": {
+      "type": "object",
+      "required": ["type", "subject", "predicate", "object"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string" },
+        "type": { "type": "string" },
+        "subject": { "type": "string", "description": "id of the subject entity" },
+        "predicate": { "type": "string" },
+        "object": { "type": "string", "description": "id of the object entity" },
+        "origin": {
+      "enum": ["observed", "derived", "generated"],
+      "default": "observed",
+      "description": "Where the assertion came from. 'generated' means proposed by a system, typically a language model — a proposal, not a finding."
+    },
+    "evidence": {
+      "type": "array",
+      "description": "Passages supporting the claim. source cites; evidence quotes.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "uri": { "type": "string" },
+          "locator": { "type": "string", "description": "Page, line range, span, cell or timestamp within the source." },
+          "excerpt": { "type": "string" },
+          "retrieved": { "$ref": "#/$defs/temporalPoint" }
+        }
+      }
+    },
+    "polarity": { "$ref": "#/$defs/polarity" },
+        "valid_from": { "$ref": "#/$defs/temporalPoint" },
+        "valid_to": { "$ref": "#/$defs/temporalPoint" },
+        "derived_from": { "$ref": "#/$defs/derived_from" },
+        "source": { "$ref": "#/$defs/source" },
+        "confidence": { "$ref": "#/$defs/confidence" },
+        "confidence_method": { "type": "string", "description": "How the confidence was derived; mirrors confidence/@method in XML." }
+      }
+    },
+    "fact": {
+      "type": "object",
+      "required": ["statement"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string" },
+        "about": { "type": "string", "description": "id of the entity or relationship this fact describes" },
+        "statement": { "type": "string" },
+        "asserted": { "type": "boolean", "default": true, "description": "Whether the fact is claimed to hold. false marks a declared-but-unclaimed fact, such as a rule conclusion awaiting derivation." },
+        "origin": { "$ref": "#/$defs/origin" },
+        "evidence": { "$ref": "#/$defs/evidence" },
+        "value": { "$ref": "#/$defs/value" },
+        "origin": {
+      "enum": ["observed", "derived", "generated"],
+      "default": "observed",
+      "description": "Where the assertion came from. 'generated' means proposed by a system, typically a language model — a proposal, not a finding."
+    },
+    "evidence": {
+      "type": "array",
+      "description": "Passages supporting the claim. source cites; evidence quotes.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "uri": { "type": "string" },
+          "locator": { "type": "string", "description": "Page, line range, span, cell or timestamp within the source." },
+          "excerpt": { "type": "string" },
+          "retrieved": { "$ref": "#/$defs/temporalPoint" }
+        }
+      }
+    },
+    "polarity": { "$ref": "#/$defs/polarity" },
+        "valid_from": { "$ref": "#/$defs/temporalPoint" },
+        "valid_to": { "$ref": "#/$defs/temporalPoint" },
+        "hash": { "$ref": "#/$defs/digest" },
+        "derived_from": { "$ref": "#/$defs/derived_from" },
+        "source": { "$ref": "#/$defs/source" },
+        "confidence": { "$ref": "#/$defs/confidence" },
+        "confidence_method": { "type": "string", "description": "How the confidence was derived; mirrors confidence/@method in XML." }
+      }
+    },
+    "rule": {
+      "type": "object",
+      "required": ["conditions", "conclusion"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string" },
+        "conditions": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["ref"],
+            "additionalProperties": false,
+            "properties": {
+              "ref": { "type": "string", "description": "id of a fact or entity" },
+              "origin": {
+      "enum": ["observed", "derived", "generated"],
+      "default": "observed",
+      "description": "Where the assertion came from. 'generated' means proposed by a system, typically a language model — a proposal, not a finding."
+    },
+    "evidence": {
+      "type": "array",
+      "description": "Passages supporting the claim. source cites; evidence quotes.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "uri": { "type": "string" },
+          "locator": { "type": "string", "description": "Page, line range, span, cell or timestamp within the source." },
+          "excerpt": { "type": "string" },
+          "retrieved": { "$ref": "#/$defs/temporalPoint" }
+        }
+      }
+    },
+    "polarity": { "$ref": "#/$defs/polarity" }
+            }
+          }
+        },
+        "conclusion": { "type": "string", "description": "id of a fact" },
+        "origin": { "$ref": "#/$defs/origin" },
+        "evidence": { "$ref": "#/$defs/evidence" },
+        "valid_from": { "$ref": "#/$defs/temporalPoint" },
+        "valid_to": { "$ref": "#/$defs/temporalPoint" },
+        "source": { "$ref": "#/$defs/source" },
+        "confidence": { "$ref": "#/$defs/confidence" },
+        "confidence_method": { "type": "string", "description": "How the confidence was derived; mirrors confidence/@method in XML." }
+      }
+    }
+  }
+}

@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           xmlns:aodm="http://fucaspark.com/aodm/1.2"
+           targetNamespace="http://fucaspark.com/aodm/1.2"
+           elementFormDefault="qualified">
+
+  <xs:simpleType name="temporalPoint">
+    <xs:union memberTypes="xs:date xs:dateTime"/>
+  </xs:simpleType>
+
+  <xs:simpleType name="digest">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="[a-z0-9\-]+:[0-9a-fA-F]{32,128}"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="origin">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="observed"/>
+      <xs:enumeration value="derived"/>
+      <xs:enumeration value="generated"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="polarity">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="positive"/>
+      <xs:enumeration value="negative"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="confidenceValue">
+    <xs:restriction base="xs:decimal">
+      <xs:minInclusive value="0.0"/>
+      <xs:maxInclusive value="1.0"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:element name="knowledge">
+    <xs:complexType>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:element ref="aodm:entity"/>
+        <xs:element ref="aodm:relationship"/>
+        <xs:element ref="aodm:fact"/>
+        <xs:element ref="aodm:rule"/>
+        <xs:element ref="aodm:source"/>
+      </xs:choice>
+      <xs:attribute name="version" type="xs:string" default="1.2"/>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="source">
+    <xs:complexType mixed="true">
+      <xs:attribute name="id" type="xs:ID"/>
+      <xs:attribute name="uri" type="xs:anyURI"/>
+      <xs:attribute name="title" type="xs:string"/>
+      <xs:attribute name="retrieved" type="xs:date"/>
+
+      <xs:attribute name="asserted" type="aodm:temporalPoint"/>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="confidence">
+    <xs:complexType>
+      <xs:attribute name="value" type="aodm:confidenceValue" use="required"/>
+      <xs:attribute name="method" type="xs:string"/>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="value">
+    <xs:complexType>
+      <xs:attribute name="number" type="xs:decimal"/>
+      <xs:attribute name="min" type="xs:decimal"/>
+      <xs:attribute name="max" type="xs:decimal"/>
+      <xs:attribute name="tolerance" type="xs:decimal"/>
+
+      <xs:attribute name="unit" type="xs:string"/>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="evidence">
+    <xs:complexType mixed="true">
+      <xs:attribute name="uri" type="xs:anyURI"/>
+
+      <xs:attribute name="locator" type="xs:string"/>
+      <xs:attribute name="retrieved" type="xs:date"/>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="entity">
+    <xs:complexType mixed="true">
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:element ref="aodm:source"/>
+        <xs:element ref="aodm:confidence"/>
+      </xs:choice>
+      <xs:attribute name="id" type="xs:ID" use="required"/>
+      <xs:attribute name="type" type="xs:string" use="required"/>
+      <xs:attribute name="label" type="xs:string"/>
+      <xs:attribute name="hash" type="aodm:digest"/>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="relationship">
+    <xs:complexType mixed="true">
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:element ref="aodm:source"/>
+        <xs:element ref="aodm:confidence"/>
+        <xs:element ref="aodm:evidence"/>
+      </xs:choice>
+      <xs:attribute name="id" type="xs:ID"/>
+      <xs:attribute name="type" type="xs:string" use="required"/>
+      <xs:attribute name="subject" type="xs:IDREF" use="required"/>
+      <xs:attribute name="predicate" type="xs:string" use="required"/>
+      <xs:attribute name="object" type="xs:IDREF" use="required"/>
+      <xs:attribute name="polarity" type="aodm:polarity" default="positive"/>
+      <xs:attribute name="origin" type="aodm:origin" default="observed"/>
+      <xs:attribute name="valid-from" type="aodm:temporalPoint"/>
+      <xs:attribute name="valid-to" type="aodm:temporalPoint"/>
+      <xs:attribute name="derived-from" type="xs:IDREFS"/>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="fact">
+    <xs:complexType mixed="true">
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:element ref="aodm:value"/>
+        <xs:element ref="aodm:source"/>
+        <xs:element ref="aodm:confidence"/>
+        <xs:element ref="aodm:evidence"/>
+      </xs:choice>
+      <xs:attribute name="id" type="xs:ID"/>
+      <xs:attribute name="about" type="xs:IDREF"/>
+      <xs:attribute name="polarity" type="aodm:polarity" default="positive"/>
+
+      <xs:attribute name="asserted" type="xs:boolean" default="true"/>
+      <xs:attribute name="origin" type="aodm:origin" default="observed"/>
+      <xs:attribute name="valid-from" type="aodm:temporalPoint"/>
+      <xs:attribute name="valid-to" type="aodm:temporalPoint"/>
+      <xs:attribute name="hash" type="aodm:digest"/>
+
+      <xs:attribute name="derived-from" type="xs:IDREFS"/>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="rule">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="condition" maxOccurs="unbounded">
+          <xs:complexType>
+            <xs:attribute name="ref" type="xs:IDREF" use="required"/>
+            <xs:attribute name="polarity" type="aodm:polarity" default="positive"/>
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="conclusion">
+          <xs:complexType>
+            <xs:attribute name="ref" type="xs:IDREF" use="required"/>
+          </xs:complexType>
+        </xs:element>
+        <xs:choice minOccurs="0" maxOccurs="unbounded">
+          <xs:element ref="aodm:source"/>
+          <xs:element ref="aodm:confidence"/>
+          <xs:element ref="aodm:evidence"/>
+        </xs:choice>
+      </xs:sequence>
+      <xs:attribute name="id" type="xs:ID"/>
+      <xs:attribute name="origin" type="aodm:origin" default="observed"/>
+      <xs:attribute name="valid-from" type="aodm:temporalPoint"/>
+      <xs:attribute name="valid-to" type="aodm:temporalPoint"/>
+    </xs:complexType>
+  </xs:element>
+
+</xs:schema>

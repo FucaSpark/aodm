@@ -1,0 +1,7 @@
+.venv/
+__pycache__/
+*.pyc
+.DS_Store
+**/.DS_Store
+parsers/csharp/bin/
+parsers/csharp/obj/

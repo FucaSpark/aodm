@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<aodm:knowledge version="1.2" xmlns:aodm="http://fucaspark.com/aodm/1.2">
+
+  <aodm:entity id="engine" type="component" label="Engine"/>
+  <aodm:entity id="fuel" type="substance" label="Fuel"/>
+  <aodm:entity id="spark" type="substance" label="Spark"/>
+  <aodm:entity id="coolant" type="substance" label="Coolant"/>
+
+  <aodm:relationship id="needs-spark" type="requires" subject="engine"
+                     predicate="requires" object="spark">
+    <aodm:confidence value="1.0"/>
+  </aodm:relationship>
+
+  <aodm:relationship id="needs-fuel" type="requires" subject="engine"
+                     predicate="requires" object="fuel" valid-from="2024-01-01">
+    <aodm:confidence value="1.0"/>
+  </aodm:relationship>
+
+  <aodm:relationship id="no-coolant" type="requires" subject="engine"
+                     predicate="requires" object="coolant" polarity="negative">
+    <aodm:confidence value="0.88"/>
+  </aodm:relationship>
+
+  <aodm:fact id="temp-rise" about="engine" valid-from="2026-01-15">
+    Temperature rise under sustained load.
+    <aodm:value number="1.2" unit="Cel" tolerance="0.1"/>
+    <aodm:source uri="https://example.com/report-24" title="Test Report 24" retrieved="2026-01-15"/>
+    <aodm:confidence value="0.9"/>
+  </aodm:fact>
+
+  <aodm:fact id="pressure-nominal" about="engine" valid-from="2026-01-15">
+    Operating pressure within the nominal envelope.
+    <aodm:value min="5" max="10" unit="bar"/>
+    <aodm:source uri="https://example.com/report-24" title="Test Report 24" retrieved="2026-01-15"/>
+    <aodm:confidence value="0.95"/>
+  </aodm:fact>
+
+  <aodm:fact id="temp-rise-legacy" about="engine"
+             valid-from="2024-01-01" valid-to="2025-12-31">
+    Temperature rise, pre-revision baseline.
+    <aodm:value number="1.1" unit="Cel"/>
+    <aodm:confidence value="0.8"/>
+  </aodm:fact>
+
+  <aodm:fact id="failure-risk" about="engine" asserted="false">
+    Elevated failure risk under sustained load.
+  </aodm:fact>
+
+  <aodm:fact id="shorten-service" about="engine" asserted="false">
+    Service interval should be shortened.
+  </aodm:fact>
+
+  <aodm:rule id="risk-rule" valid-from="2026-01-01">
+    <aodm:condition ref="temp-rise"/>
+    <aodm:condition ref="pressure-nominal"/>
+    <aodm:conclusion ref="failure-risk"/>
+    <aodm:source title="Reliability Engineering Handbook, 4th ed."/>
+    <aodm:confidence value="0.7" method="model-estimate"/>
+  </aodm:rule>
+
+  <aodm:rule id="service-rule">
+    <aodm:condition ref="failure-risk"/>
+    <aodm:conclusion ref="shorten-service"/>
+    <aodm:confidence value="0.9"/>
+  </aodm:rule>
+
+</aodm:knowledge>

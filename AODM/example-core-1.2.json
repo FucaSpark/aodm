@@ -1,0 +1,89 @@
+{
+  "aodm_version": "1.2",
+  "entities": [
+    {
+      "id": "engine",
+      "type": "component",
+      "label": "Engine",
+      "content": "Internal combustion engine, 4-cylinder.",
+      "hash": "sha256:2a405ca8706ec21cb1e55539b1c514daf94b3f6cb304328b3df662b04b80c1d7",
+      "source": {
+        "uri": "https://example.com/spec-sheet-24",
+        "title": "Engineering Test Report 24",
+        "asserted": "2025-11-02",
+        "retrieved": "2026-01-15"
+      },
+      "confidence": 0.95
+    },
+    { "id": "fuel", "type": "substance", "label": "Fuel" },
+    { "id": "coolant", "type": "substance", "label": "Coolant" }
+  ],
+  "relationships": [
+    {
+      "id": "engine-requires-fuel",
+      "type": "requires",
+      "subject": "engine",
+      "predicate": "requires",
+      "object": "fuel",
+      "valid_from": "2024-01-01",
+      "confidence": 1.0
+    },
+    {
+      "id": "engine-not-coolant",
+      "type": "requires",
+      "subject": "engine",
+      "predicate": "requires",
+      "object": "coolant",
+      "polarity": "negative",
+      "source": { "title": "Design Review 2026-02" },
+      "confidence": 0.88
+    }
+  ],
+  "facts": [
+    {
+      "id": "temp-rise",
+      "about": "engine",
+      "statement": "Temperature rise under sustained load.",
+      "value": { "number": 1.2, "unit": "Cel", "tolerance": 0.1 },
+      "valid_from": "2026-01-15",
+      "source": { "uri": "https://example.com/report-24", "retrieved": "2026-01-15" },
+      "confidence": 0.9
+    },
+    {
+      "id": "operating-pressure",
+      "about": "engine",
+      "statement": "Nominal operating pressure envelope.",
+      "value": { "min": 5, "max": 10, "unit": "bar" },
+      "source": { "uri": "https://example.com/spec-sheet-24" }
+    },
+    {
+      "id": "temp-rise-legacy",
+      "about": "engine",
+      "statement": "Temperature rise under sustained load, pre-revision baseline.",
+      "value": { "number": 1.1, "unit": "Cel" },
+      "valid_from": "2024-01-01",
+      "valid_to": "2026-01-14",
+      "confidence": 0.8
+    },
+    {
+      "id": "failure-risk",
+      "about": "engine",
+      "statement": "Elevated failure risk under sustained load.",
+      "derived_from": ["risk-rule", "temp-rise"],
+      "confidence": 0.7
+    }
+  ],
+  "rules": [
+    {
+      "id": "risk-rule",
+      "conditions": [
+        { "ref": "temp-rise" },
+        { "ref": "operating-pressure" }
+      ],
+      "conclusion": "failure-risk",
+      "valid_from": "2026-01-01",
+      "source": { "title": "Reliability Engineering Handbook, 4th ed." },
+      "confidence": 0.7
+    }
+  ]
+}
